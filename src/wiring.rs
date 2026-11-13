@@ -1,8 +1,16 @@
-//! Complete the two TODOs in this file.
-
-use embassy_stm32::{Peripherals, can::Can, usart::BufferedUart};
-
 use crate::swd::Swd;
+use embassy_stm32::{
+    Peripherals, bind_interrupts,
+    can::Can,
+    gpio::{Flex, Level, Output, Speed},
+    peripherals,
+    usart::{self, BufferedUart, Config, DataBits, Parity, StopBits},
+};
+use static_cell::StaticCell;
+
+bind_interrupts!(struct UartIrqs {
+    UART8 => usart::BufferedInterruptHandler<peripherals::UART8>;
+});
 
 pub struct Ports {
     pub can: Can<'static>,
@@ -12,14 +20,32 @@ pub struct Ports {
 pub fn configure(p: Peripherals) -> (crate::board::Usb, Ports, Option<Swd>) {
     let usb = crate::board::usb(p.USB_OTG_HS, p.PA12, p.PA11);
 
-    // TODO 1: Pick two exposed 3.3 V GPIOs and pass them to Swd::new.
-    // Use Output for SWCLK (initially low), and Flex for bidirectional SWDIO.
-    let swd = None;
+    let swd = Some(Swd::new(
+        Output::new(p.PD14, Level::Low, Speed::Low),
+        Flex::new(p.PD15),
+    ));
 
-    // TODO 2: Configure a buffered UART at 115200 baud, 8N1.
-    // Identify the peripheral, RX/TX pins and interrupt from the schematic.
-    // Bind the interrupt and provide static RX and TX buffers.
-    let uart = None;
+    static TX_BUF: StaticCell<[u8; 512]> = StaticCell::new();
+    static RX_BUF: StaticCell<[u8; 512]> = StaticCell::new();
+
+    let mut config = Config::default();
+    config.baudrate = 115200;
+    config.data_bits = DataBits::DataBits8;
+    config.parity = Parity::ParityNone;
+    config.stop_bits = StopBits::STOP1;
+
+    let uart = Some(
+        BufferedUart::new(
+            p.UART8,
+            p.PE0,
+            p.PE1,
+            TX_BUF.init([0; 512]),
+            RX_BUF.init([0; 512]),
+            UartIrqs,
+            config,
+        )
+        .unwrap(),
+    );
 
     let can = crate::board::can1(p.FDCAN1, p.PD0, p.PD1);
     (usb, Ports { can, uart }, swd)

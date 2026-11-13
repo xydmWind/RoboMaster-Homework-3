@@ -2,7 +2,7 @@
 
 ## MCU 是什么，程序怎么装进去
 
-**MCU（Microcontroller Unit，微控制器）**把 CPU、程序存储器 Flash、运行时内存 SRAM 和 GPIO、UART、USB 等外设集成在一颗芯片里。**STM32** 是 STMicroelectronics 的微控制器系列，**STM32H723VG** 是 DM-MC02 板上使用的具体芯片。烧录是把编译后的固件写入 Flash。板子正常复位后，MCU 从 Flash 启动并运行这份固件。
+**MCU（Microcontroller Unit，微控制器）** 把 CPU、程序存储器 Flash、运行时内存 SRAM 和 GPIO、UART、USB 等外设集成在一颗芯片里。**STM32** 是 STMicroelectronics 的微控制器系列，**STM32H723VG** 是 DM-MC02 板上使用的具体芯片。烧录是把编译后的固件写入 Flash。板子正常复位后，MCU 从 Flash 启动并运行这份固件。
 
 USB-C 提供连接，板子当前运行的程序决定电脑能通过 USB 做什么。本作业固件正常启动时，USB 提供调试探针和串口功能。要通过 USB 给这颗 STM32 本身烧录，可以先让它启动 ST 预装在系统存储器里的 **Bootloader（引导程序）**。进入 **USB DFU（Device Firmware Upgrade）** 模式后，电脑可以用支持 DFU 的工具将固件写入 Flash。STM32H723 支持这条路径，前提是板子接出了对应的 USB 信号并进入系统引导模式。[ST AN2606，STM32H72xxx/73xxx](https://www.st.com/resource/en/application_note/an2606-stm32-microcontroller-system-memory-boot-mode-stmicroelectronics.pdf)
 
