@@ -62,31 +62,6 @@ async fn main(_spawner: Spawner) {
     .await;
 }
 
-/* Replaced by can_bridge
-async fn control_port(
-    mut usb: CdcAcmClass<'static, Usb>,
-    mut can: Can<'static>,
-    mut swd: Option<Swd>,
-) {
-    let mut packet = [0; PACKET];
-    loop {
-        usb.wait_connection().await;
-        let mut line = protocol::Line::new();
-        'connection: while let Ok(n) = usb.read_packet(&mut packet).await {
-            for &byte in &packet[..n] {
-                if let Some(command) = line.push(byte) {
-                    let reply = protocol::execute(command, &mut can, &mut swd).await;
-                    // Responses are bounded below 64 B, so USB needs no extra ZLP.
-                    if usb.write_packet(reply.as_bytes()).await.is_err() {
-                        break 'connection;
-                    }
-                }
-            }
-        }
-    }
-}
- */
-
 async fn uart_port(usb: CdcAcmClass<'static, Usb>, uart: Option<BufferedUart<'static>>) {
     let Some(uart) = uart else {
         return;
