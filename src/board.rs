@@ -4,7 +4,7 @@ use embassy_stm32::{
     Config, Peri, Peripherals, bind_interrupts,
     can::{
         Can, CanConfigurator, IT0InterruptHandler, IT1InterruptHandler,
-        config::{FrameTransmissionConfig, NominalBitTiming},
+        config::{FrameTransmissionConfig, NominalBitTiming, TxBufferMode},
     },
     peripherals,
     rcc::{
@@ -75,9 +75,11 @@ pub fn can1(
         seg2: NonZeroU8::new(20).unwrap(),
         sync_jump_width: NonZeroU8::new(20).unwrap(),
     };
+    // Use Fifo
     let config = can
         .config()
         .set_nominal_bit_timing(timing)
+        .set_tx_buffer_mode(TxBufferMode::Fifo)
         .set_frame_transmit(FrameTransmissionConfig::ClassicCanOnly);
     can.set_config(config);
     can.into_normal_mode()

@@ -20,11 +20,13 @@ pub struct Ports {
 pub fn configure(p: Peripherals) -> (crate::board::Usb, Ports, Option<Swd>) {
     let usb = crate::board::usb(p.USB_OTG_HS, p.PA12, p.PA11);
 
+    // SWD GPIO
     let swd = Some(Swd::new(
         Output::new(p.PD14, Level::Low, Speed::Low),
         Flex::new(p.PD15),
     ));
 
+    // UART
     static TX_BUF: StaticCell<[u8; 512]> = StaticCell::new();
     static RX_BUF: StaticCell<[u8; 512]> = StaticCell::new();
 

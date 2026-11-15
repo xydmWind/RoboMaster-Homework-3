@@ -2,15 +2,16 @@
 #![no_main]
 
 mod board;
+mod can_bridge;
 mod dap_usb;
 mod protocol;
 pub mod swd;
+mod text_protocol;
 mod wiring;
 
 use board::Usb;
 use embassy_executor::Spawner;
 use embassy_futures::{join::join4, select::select};
-use embassy_stm32::can::Can;
 use embassy_stm32::usart::BufferedUart;
 use embassy_usb::{
     Builder,
@@ -19,7 +20,6 @@ use embassy_usb::{
 use embedded_io_async::{Read, Write};
 use panic_halt as _;
 use static_cell::StaticCell;
-use swd::Swd;
 
 const PACKET: usize = 64;
 // Track linker-script changes so Cargo relinks the firmware.
@@ -52,15 +52,17 @@ async fn main(_spawner: Spawner) {
     let control = CdcAcmClass::new(&mut builder, CTL_STATE.init(State::new()), PACKET as u16);
     let serial = CdcAcmClass::new(&mut builder, UART_STATE.init(State::new()), PACKET as u16);
     let mut device = builder.build();
+    // CAN Bridge
     join4(
         device.run(),
-        control_port(control, ports.can, swd),
+        can_bridge::run(control, ports.can, swd),
         uart_port(serial, ports.uart),
         dap.run(),
     )
     .await;
 }
 
+/* Replaced by can_bridge
 async fn control_port(
     mut usb: CdcAcmClass<'static, Usb>,
     mut can: Can<'static>,
@@ -83,6 +85,7 @@ async fn control_port(
         }
     }
 }
+ */
 
 async fn uart_port(usb: CdcAcmClass<'static, Usb>, uart: Option<BufferedUart<'static>>) {
     let Some(uart) = uart else {

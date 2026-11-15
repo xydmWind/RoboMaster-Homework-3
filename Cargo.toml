@@ -17,6 +17,7 @@ embedded-io-async = "=0.7.0"
 heapless = "=0.9.3"
 panic-halt = "=1.0.0"
 static_cell = "=2.1.1"
+embassy-sync = "0.8.0"
 
 [profile.dev]
 opt-level = 1
