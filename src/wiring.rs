@@ -12,7 +12,7 @@ use static_cell::StaticCell;
 
 // 将 UART8 的硬件中断交给 BufferedUart
 bind_interrupts!(struct UartIrqs {
-    UART8 => usart::BufferedInterruptHandler<peripherals::UART8>;
+    UART7 => usart::BufferedInterruptHandler<peripherals::UART7>;
 });
 
 pub struct Ports {
@@ -28,8 +28,8 @@ pub fn configure(p: Peripherals) -> (crate::board::Usb, Ports, Option<Swd>) {
     // SWDIO 要在发送请求与读取目标回复之间切换方向，所以使用 Flex
     // Speed::Low 控制 GPIO 速度
     let swd = Some(Swd::new(
-        Output::new(p.PD14, Level::Low, Speed::Low),
-        Flex::new(p.PD15),
+        Output::new(p.PE9, Level::Low, Speed::Low),
+        Flex::new(p.PE13),
     ));
 
     // 驱动在 configure 返回之后仍会使用缓冲区，因此必须放在静态存储区
@@ -49,9 +49,9 @@ pub fn configure(p: Peripherals) -> (crate::board::Usb, Ports, Option<Swd>) {
     // unwrap 遇到错误会触发 panic
     let uart = Some(
         BufferedUart::new(
-            p.UART8,
-            p.PE0,
-            p.PE1,
+            p.UART7,
+            p.PE7,
+            p.PE8,
             TX_BUF.init([0; 512]),
             RX_BUF.init([0; 512]),
             UartIrqs,
