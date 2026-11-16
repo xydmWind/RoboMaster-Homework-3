@@ -66,6 +66,7 @@ async fn uart_port(usb: CdcAcmClass<'static, Usb>, uart: Option<BufferedUart<'st
     let Some(uart) = uart else {
         return;
     };
+    // 各自拆出读写端，让 USB→UART 与 UART→USB 同时等待自己的数据
     let (mut serial_out, mut serial_in) = uart.split();
     let (mut usb_out, mut usb_in) = usb.split();
     loop {
@@ -87,6 +88,7 @@ async fn uart_port(usb: CdcAcmClass<'static, Usb>, uart: Option<BufferedUart<'st
                 }
             }
         };
+        // 任一方向因端点/串口错误退出，就取消另一方向的等待，回到外层重新等待连接
         select(from_host, to_host).await;
     }
 }
